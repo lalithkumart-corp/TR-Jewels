@@ -5,7 +5,7 @@ import { doLogin } from '../../../actions/auth';
 import { TextInput, Button }  from 'react-native-paper';
 
 interface SignInState {
-    userName: string,
+    mobile: string,
     password: string
 }
 
@@ -14,7 +14,7 @@ class SignIn extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            userName: '',
+            mobile: '',
             password: ''
         }
         this.bindMethods();
@@ -23,14 +23,21 @@ class SignIn extends Component {
         this.onChange = this.onChange.bind(this);
         this.onLoginClick = this.onLoginClick.bind(this);
     }
-    onLoginClick() {
-
+    async onLoginClick() {
+        let newState = {...this.state};
+        let sql = `SELECT * FROM user WHERE mobile="${this.state.mobile}" AND password="${this.state.password}"`;
+        let res = await this.props.db.dbReference.executeSql(sql);
+        console.log('SINGIN.TSX SQL + Rows Length = ', sql, res.rows.length);
+        debugger;
+        if(res.rows.length > 0)
+            this.props.doLogin(res.rows.item(0));
     }
+
     onChange(text, identifier) {
         let newState = {...this.state};
         switch(identifier) {
-            case 'userName': 
-                newState.userName = text;
+            case 'mobile': 
+                newState.mobile = text;
                 break;
             case 'password': 
                 newState.password = text;
@@ -43,9 +50,9 @@ class SignIn extends Component {
             <View style={{flex: 1, justifyContent: 'center'}}>
                 <View style={{flex: 0.2}}>
                     <TextInput
-                        label='UserName'
-                        value={this.state.userName}
-                        onChangeText={text => this.onChange(text, 'userName')}
+                        label='Mobile Number'
+                        value={this.state.mobile}
+                        onChangeText={text => this.onChange(text, 'mobile')}
                         accessibilityStates={[]}
                         style={{margin: 10}}
                     />
@@ -65,5 +72,6 @@ class SignIn extends Component {
 
 const mapStateToProps = state => ({
     auth: state.auth,
+    db: state.db
 });
 export default connect(mapStateToProps, {doLogin})(SignIn)
